@@ -1,6 +1,6 @@
 {
   "name": "globeworks-ticket",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Professional Discord-only multi-server ticket, application, archive and custom command bot",
   "main": "src/index.js",
   "scripts": {
@@ -13,8 +13,8 @@
   },
   "dependencies": {
     "discord.js": "^14.16.3",
-    "better-sqlite3": "^11.7.0",
-    "dotenv": "^16.4.7"
+    "dotenv": "^16.4.7",
+    "sql.js": "^1.12.0"
   },
   "keywords": [
     "discord",

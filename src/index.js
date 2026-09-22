@@ -2,11 +2,11 @@ require('dotenv').config();
 const { Client, GatewayIntentBits, Partials, Collection } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
+const { initDb, closeDb } = require('./database/db');
 const { migrate } = require('./database/schema');
-const { closeDb } = require('./database/db');
 
 if (!process.env.DISCORD_TOKEN || !process.env.CLIENT_ID) {
-  console.error('Missing DISCORD_TOKEN or CLIENT_ID in .env');
+  console.error('Missing DISCORD_TOKEN or CLIENT_ID in environment variables');
   process.exit(1);
 }
 
@@ -33,13 +33,15 @@ for (const file of fs.readdirSync(eventsPath).filter(f => f.endsWith('.js'))) {
   }
 }
 
-// Database
-console.log('[Startup] Initializing database...');
-migrate();
-console.log('[Startup] Database ready.');
-
 process.on('SIGINT', () => {
   console.log('[Shutdown] Closing...');
+  closeDb();
+  client.destroy();
+  process.exit(0);
+});
+
+process.on('SIGTERM', () => {
+  console.log('[Shutdown] SIGTERM...');
   closeDb();
   client.destroy();
   process.exit(0);
@@ -49,7 +51,16 @@ process.on('unhandledRejection', (err) => {
   console.error('[Unhandled Rejection]', err);
 });
 
-client.login(process.env.DISCORD_TOKEN).catch((err) => {
-  console.error('[Login Failed]', err.message);
+async function main() {
+  console.log('[Startup] Initializing database...');
+  await initDb();
+  migrate();
+  console.log('[Startup] Database ready.');
+
+  await client.login(process.env.DISCORD_TOKEN);
+}
+
+main().catch((err) => {
+  console.error('[Startup Failed]', err);
   process.exit(1);
 });

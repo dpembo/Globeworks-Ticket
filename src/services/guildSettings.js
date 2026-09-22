@@ -34,8 +34,11 @@ function updateSettings(guildId, updates) {
 function nextTicketNumber(guildId) {
   const db = getDb();
   ensureGuild(guildId);
+  db.prepare(
+    `UPDATE guild_settings SET ticket_counter = ticket_counter + 1, updated_at = datetime('now') WHERE guild_id = ?`
+  ).run(guildId);
   const row = db.prepare(
-    `UPDATE guild_settings SET ticket_counter = ticket_counter + 1, updated_at = datetime('now') WHERE guild_id = ? RETURNING ticket_counter`
+    `SELECT ticket_counter FROM guild_settings WHERE guild_id = ?`
   ).get(guildId);
   return row.ticket_counter;
 }
